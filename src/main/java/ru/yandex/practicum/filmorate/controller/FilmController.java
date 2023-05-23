@@ -2,7 +2,9 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.controller.exception.*;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -23,7 +25,7 @@ public class FilmController {
     private int countId = 0;
 
     @PostMapping()
-    public ResponseEntity<Film> addFilm(@RequestBody @NotNull Film film) {
+    public ResponseEntity<Film> addFilm(@RequestBody Film film) {
 
         try {
             generalValidateFilm(film);
@@ -32,28 +34,31 @@ public class FilmController {
             log.info("Добавлен фильм: " + film);
 
         } catch (ValidationException e) {
-            return ResponseEntity.badRequest().body(film);
+            log.warn("Ошибка ввода данных: " + e.getMessage());
+            return new ResponseEntity<>(film, HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return ResponseEntity.ok(film);
+        log.warn("Фильм добавлен: " + film);
+        return new ResponseEntity<>(film, HttpStatus.OK);
+
     }
 
     @PutMapping()
-    public ResponseEntity<Film> updateFilm(@RequestBody @NotNull Film film) throws ValidationException {
-
-        if (films.get(film.getId()) == null) {
-            throw new ValidationException("Фильм не найден!");
-        }
+    public ResponseEntity<Film> updateFilm(@RequestBody Film film) {
 
         try {
+            if (films.get(film.getId()) == null) {
+                throw new ValidationException("Фильм не найден!");
+            }
             generalValidateFilm(film);
-            films.remove(film.getId());
             films.put(film.getId(), film);
             log.info("Обновлен фильм: " + film);
 
         } catch (ValidationException e) {
-            return ResponseEntity.badRequest().body(film);
+            log.warn("Ошибка ввода данных: " + e.getMessage());
+            return new ResponseEntity<>(film, HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return ResponseEntity.ok(film);
+        log.warn("Фильм изменён: " + film);
+        return new ResponseEntity<>(film, HttpStatus.OK);
     }
 
     @GetMapping()
@@ -67,7 +72,7 @@ public class FilmController {
 
     private void generalValidateFilm(@NotNull Film film) throws ValidationException {
 
-        if (film.getName() == null || film.getName().equals(""))
+        if (StringUtils.isEmpty(film.getName()))
             throw new ValidationException("Название не может быть пустым!");
 
         if (film.getDescription().length() > 200)

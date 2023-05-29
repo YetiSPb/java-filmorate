@@ -1,17 +1,17 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.controller.exception.*;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -19,72 +19,68 @@ import java.util.Map;
 @RestController
 @RequestMapping("/films")
 public class FilmController {
-    private static final LocalDate MIN_DATE_RELEASE = LocalDate.of(1895, 12, 28);
-
-    private final Map<Integer, Film> films = new LinkedHashMap<>();
-    private int countId = 0;
+    @Autowired
+    FilmStorage filmStorage;
+    @Autowired
+    FilmService filmService;
 
     @PostMapping()
     public ResponseEntity<Film> addFilm(@RequestBody Film film) {
-
-        try {
-            generalValidateFilm(film);
-            film.setId(genNewId());
-            films.put(film.getId(), film);
-            log.info("Добавлен фильм: " + film);
-
-        } catch (ValidationException e) {
-            log.warn("Ошибка ввода данных: " + e.getMessage());
-            return new ResponseEntity<>(film, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        filmStorage.addFilm(film);
         log.warn("Фильм добавлен: " + film);
         return new ResponseEntity<>(film, HttpStatus.OK);
-
     }
 
     @PutMapping()
     public ResponseEntity<Film> updateFilm(@RequestBody Film film) {
-
-        try {
-            if (films.get(film.getId()) == null) {
-                throw new ValidationException("Фильм не найден!");
-            }
-            generalValidateFilm(film);
-            films.put(film.getId(), film);
-            log.info("Обновлен фильм: " + film);
-
-        } catch (ValidationException e) {
-            log.warn("Ошибка ввода данных: " + e.getMessage());
-            return new ResponseEntity<>(film, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        filmStorage.updateFilm(film);
         log.warn("Фильм изменён: " + film);
         return new ResponseEntity<>(film, HttpStatus.OK);
     }
 
     @GetMapping()
     public List<Film> getAllFilms() {
-        return new ArrayList<>(films.values());
+        return new ArrayList<>(filmStorage.getAllFilms());
     }
 
-    private int genNewId() {
-        return ++countId;
+    @GetMapping(value = "/{id}")
+    public ResponseEntity<?> getFilm(@PathVariable int id) {
+        Film film = filmStorage.getFilmById(id);
+        return new ResponseEntity<>(film, HttpStatus.OK);
     }
 
-    private void generalValidateFilm(@NotNull Film film) throws ValidationException {
+    @PutMapping(value = "/{id}/like/{userId}")
+    public ResponseEntity<?> addLike(@PathVariable int id, @PathVariable int userId) {
+        filmService.addLike(id, userId);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 
-        if (StringUtils.isEmpty(film.getName()))
-            throw new ValidationException("Название не может быть пустым!");
+    @DeleteMapping(value = "/{id}/like/{userId}")
+    public ResponseEntity<List<User>> deleteLike(@PathVariable int id, @PathVariable int userId) {
+        filmService.deleteLike(id, userId);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 
-        if (film.getDescription().length() > 200)
-            throw new ValidationException("Максимальная длина описания — 200 символов!");
-
-        if (film.getReleaseDate().isBefore(FilmController.MIN_DATE_RELEASE)) {
-            throw new ValidationException("Дата релиза — не раньше 28.12.1985 !");
+    @GetMapping(value = "/popular")
+    public ResponseEntity<List<Film>> getPopularFilms(@RequestParam(required = false) Integer count) {
+        if (count == null) {
+            count = 10;
         }
-        if (film.getDuration() < 1) {
-            throw new ValidationException("Продолжительность фильма должна быть положительной!");
-        }
+        return new ResponseEntity<>(filmService.getPopularFilms(count), HttpStatus.OK);
+    }
 
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    private Map<String, String> handlerValidationException(final ValidationException e) {
+        log.warn("Ошибка ввода данных: " + e.getMessage());
+        return Map.of("error", e.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    private Map<String, String> handlerNotFoundException(final NotFoundException e) {
+        log.warn("Ошибка ввода данных: " + e.getMessage());
+        return Map.of("error", e.getMessage());
     }
 
 }

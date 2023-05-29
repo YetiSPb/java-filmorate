@@ -1,18 +1,17 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.controller.exception.*;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -20,71 +19,74 @@ import java.util.Map;
 @RestController
 @RequestMapping("/users")
 public class UserController {
-    private final Map<Integer, User> users = new LinkedHashMap<>();
-    private int countId = 0;
+    @Autowired
+    UserStorage userStorage;
+    @Autowired
+    UserService userService;
 
-    @PostMapping
-    public ResponseEntity<User> addUser(@RequestBody  User user) {
-        try {
-            generalValidateUser(user);
-            user.setId(genNewId());
-            users.put(user.getId(), user);
-            log.info("Добавлен пользователь: " + user);
-        } catch (ValidationException e) {
-            log.warn("Ошибка ввода данных: " + e.getMessage());
-            return new ResponseEntity<>(user, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+    @PostMapping()
+    public ResponseEntity<User> addUser(@RequestBody User user) {
+        userStorage.addUser(user);
         log.warn("Пользователь добавлен: " + user);
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
-    @PutMapping
-    public ResponseEntity<User> updateUser(@RequestBody  User user) throws ValidationException {
-
-        try {
-
-            if (users.get(user.getId()) == null) {
-                throw new ValidationException("Пользователь не существует!");
-            }
-
-            generalValidateUser(user);
-            users.remove(user.getId());
-            users.put(user.getId(), user);
-            log.info("Обновлен пользователь: " + user);
-        } catch (ValidationException e) {
-            log.warn("Ошибка ввода данных: " + e.getMessage());
-            return new ResponseEntity<>(user, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        log.warn("Пользователь изменён: " + user);
+    @PutMapping()
+    public ResponseEntity<User> updateUser(@RequestBody User user) throws ValidationException {
+        userStorage.updateUser(user);
+        log.info("Обновлен пользователь: " + user);
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
     @GetMapping
     public List<User> getAllUsers() {
-        return new ArrayList<>(users.values());
+        return new ArrayList<>(userStorage.getAllUsers());
     }
 
-    private int genNewId() {
-        return ++countId;
+    @GetMapping(value = "/{id}")
+    public ResponseEntity<User> getUserById(@PathVariable int id) {
+        User user = userStorage.getUserById(id);
+        return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
-    private void generalValidateUser(@NotNull User user) throws ValidationException {
+    @PutMapping(value = "/{id}/friends/{friendId}")
+    public ResponseEntity<?> addFriend(@PathVariable int id, @PathVariable int friendId) throws ValidationException, NotFoundException {
+        userService.addFriend(id, friendId);
+        userService.addFriend(friendId, id);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 
-        if (StringUtils.isEmpty(user.getEmail())) {
-            throw new ValidationException("Электронная почта не может быть пустой и должна содержать символ @");
-        }
+    @DeleteMapping(value = "/{id}/friends/{friendId}")
+    public ResponseEntity<?> deleteFriend(@PathVariable int id, @PathVariable int friendId) {
+        userService.deleteFriend(id, friendId);
+        return new ResponseEntity<>(HttpStatus.OK);
 
-        if (StringUtils.isEmpty(user.getLogin()) || user.getLogin().indexOf(" ") > 0)
-            throw new ValidationException("Логин не может быть пустым и содержать пробелы!");
+    }
 
-        if (StringUtils.isEmpty(user.getName())) {
-            user.setName(user.getLogin());
-        }
+    @GetMapping(value = "/{id}/friends")
+    public ResponseEntity<List<User>> getAllFriends(@PathVariable int id) {
+        List<User> userFriends = userService.getAllUserFriends(id);
+        return new ResponseEntity<>(userFriends, HttpStatus.OK);
+    }
 
-        if (user.getBirthday() == null || user.getBirthday().isAfter(LocalDate.now())) {
-            throw new ValidationException("Дата рождения не может быть в будущем.!");
-        }
+    @GetMapping(value = "/{id}/friends/common/{otherId}")
+    public ResponseEntity<List<User>> getCommonFriends(@PathVariable int id, @PathVariable int otherId) {
+        List<User> CommonFriends = userService.getCommonFriends(id, otherId);
+        return new ResponseEntity<>(CommonFriends, HttpStatus.OK);
+    }
 
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    private Map<String, String> handlerValidationException(final ValidationException e) {
+        log.warn("Ошибка ввода данных: " + e.getMessage());
+        return Map.of("error", e.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    private Map<String, String> handlerNotFoundException(final NotFoundException e) {
+        log.warn("Ошибка ввода данных: " + e.getMessage());
+        return Map.of("error", e.getMessage());
     }
 
 }

@@ -15,12 +15,12 @@ class FilmControllerTest {
 
     @BeforeEach
     void setUp() {
-        filmController = new FilmController();
+        //filmController = new FilmController();
     }
 
     @AfterEach
     void tearDown() {
-        filmController = null;
+        //filmController = null;
     }
 
     @Test

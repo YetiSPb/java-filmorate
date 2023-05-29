@@ -16,12 +16,12 @@ class UserControllerTest {
 
     @BeforeEach
     void setUp() {
-        userController = new UserController();
+        //userController = new UserController();
     }
 
     @AfterEach
     void tearDown() {
-        userController = null;
+        //userController = null;
     }
 
     @Test

@@ -71,8 +71,8 @@ public class UserController {
 
     @GetMapping(value = "/{id}/friends/common/{otherId}")
     public ResponseEntity<List<User>> getCommonFriends(@PathVariable int id, @PathVariable int otherId) {
-        List<User> CommonFriends = userService.getCommonFriends(id, otherId);
-        return new ResponseEntity<>(CommonFriends, HttpStatus.OK);
+        List<User> commonFriends = userService.getCommonFriends(id, otherId);
+        return new ResponseEntity<>(commonFriends, HttpStatus.OK);
     }
 
     @ExceptionHandler

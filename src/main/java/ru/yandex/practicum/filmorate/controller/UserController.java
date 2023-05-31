@@ -13,7 +13,6 @@ import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @RestController
@@ -73,20 +72,6 @@ public class UserController {
     public ResponseEntity<List<User>> getCommonFriends(@PathVariable int id, @PathVariable int otherId) {
         List<User> commonFriends = userService.getCommonFriends(id, otherId);
         return new ResponseEntity<>(commonFriends, HttpStatus.OK);
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    private Map<String, String> handlerValidationException(final ValidationException e) {
-        log.warn("Ошибка ввода данных: " + e.getMessage());
-        return Map.of("error", e.getMessage());
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    private Map<String, String> handlerNotFoundException(final NotFoundException e) {
-        log.warn("Ошибка ввода данных: " + e.getMessage());
-        return Map.of("error", e.getMessage());
     }
 
 }

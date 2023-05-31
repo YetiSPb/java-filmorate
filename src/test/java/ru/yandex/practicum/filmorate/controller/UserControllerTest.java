@@ -28,7 +28,8 @@ class UserControllerTest {
                 LocalDate.of(1939, 4, 7));
         try {
             userController.addUser(user);
-        } catch (ValidationException e){
+        } catch (ValidationException e) {
+            System.out.println("Тест ошибки" + e.getMessage());
         }
         assertEquals(userController.getAllUsers().size(), 1);
 
@@ -37,7 +38,8 @@ class UserControllerTest {
                 LocalDate.of(1939, 4, 7));
         try {
             userController.addUser(user);
-        } catch (ValidationException e){
+        } catch (ValidationException e) {
+            System.out.println("Тест ошибки" + e.getMessage());
         }
         assertEquals(userController.getAllUsers().size(), 1);
 
@@ -45,7 +47,8 @@ class UserControllerTest {
                 LocalDate.of(1939, 4, 7));
         try {
             userController.addUser(user);
-        } catch (ValidationException e){
+        } catch (ValidationException e) {
+            System.out.println("Тест ошибки" + e.getMessage());
         }
         assertEquals(userController.getAllUsers().size(), 1);
 
@@ -53,7 +56,8 @@ class UserControllerTest {
                 LocalDate.of(2939, 4, 7));
         try {
             userController.addUser(user);
-        } catch (ValidationException e){
+        } catch (ValidationException e) {
+            System.out.println("Тест ошибки" + e.getMessage());
         }
         assertEquals(userController.getAllUsers().size(), 1);
 
@@ -61,7 +65,8 @@ class UserControllerTest {
         user = new User("francis@move.com", "Francis", "", LocalDate.of(1939, 4, 7));
         try {
             userController.addUser(user);
-        } catch (ValidationException e){
+        } catch (ValidationException e) {
+            System.out.println("Тест ошибки" + e.getMessage());
         }
         assertEquals(userController.getAllUsers().size(), 2);
         assertEquals(user.getLogin(), user.getName());
@@ -75,7 +80,8 @@ class UserControllerTest {
                 LocalDate.of(1939, 4, 7));
         try {
             userController.addUser(user);
-        } catch (ValidationException e){
+        } catch (ValidationException e) {
+            System.out.println("Тест ошибки" + e.getMessage());
         }
         assertEquals(userController.getAllUsers().size(), 3);
 
@@ -83,7 +89,8 @@ class UserControllerTest {
                 LocalDate.of(1939, 4, 7));
         try {
             userController.updateUser(userForUpdate);
-        } catch (ValidationException e){
+        } catch (ValidationException e) {
+            System.out.println("Тест ошибки" + e.getMessage());
         }
         assertTrue(userController.getAllUsers().contains(userForUpdate));
 
@@ -91,7 +98,8 @@ class UserControllerTest {
                 LocalDate.of(1939, 4, 7));
         try {
             userController.updateUser(userForUpdate);
-        } catch (ValidationException e){
+        } catch (ValidationException e) {
+            System.out.println("Тест ошибки" + e.getMessage());
         }
         assertEquals(userController.getAllUsers().size(), 3);
 
@@ -99,7 +107,8 @@ class UserControllerTest {
                 LocalDate.of(1939, 4, 7));
         try {
             userController.updateUser(userForUpdate);
-        } catch (ValidationException e){
+        } catch (ValidationException e) {
+            System.out.println("Тест ошибки" + e.getMessage());
         }
         assertEquals(userController.getAllUsers().size(), 3);
 
@@ -107,14 +116,16 @@ class UserControllerTest {
                 LocalDate.of(1939, 4, 7));
         try {
             userController.updateUser(userForUpdate);
-        } catch (ValidationException e){
+        } catch (ValidationException e) {
+            System.out.println("Тест ошибки" + e.getMessage());
         }
         assertEquals(userController.getAllUsers().size(), 3);
 
-        userForUpdate = new User(user.getId(),"francis@move.com", "Francis", "", LocalDate.of(1939, 4, 7));
+        userForUpdate = new User(user.getId(), "francis@move.com", "Francis", "", LocalDate.of(1939, 4, 7));
         try {
             userController.updateUser(userForUpdate);
-        } catch (ValidationException e){
+        } catch (ValidationException e) {
+            System.out.println("Тест ошибки" + e.getMessage());
         }
         assertEquals(userController.getAllUsers().size(), 3);
         assertEquals(userForUpdate.getLogin(), userForUpdate.getName());
@@ -124,7 +135,8 @@ class UserControllerTest {
                 LocalDate.of(2939, 4, 7));
         try {
             userController.updateUser(userForUpdate);
-        } catch (ValidationException e){
+        } catch (ValidationException e) {
+            System.out.println("Тест ошибки" + e.getMessage());
         }
         assertEquals(userController.getAllUsers().size(), 3);
     }

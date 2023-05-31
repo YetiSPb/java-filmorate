@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 class FilmControllerTest {
     @Autowired
-    FilmController filmController ;
+    FilmController filmController;
 
     @Test
     void addFilmTest() throws ValidationException {
@@ -25,7 +25,8 @@ class FilmControllerTest {
         film = new Film("", "directed by Francis Ford Coppola", LocalDate.of(1983, 10, 21), 100);
         try {
             filmController.addFilm(film);
-        } catch (ValidationException e){
+        } catch (ValidationException e) {
+            System.out.println("Тест ошибки" + e.getMessage());
         }
         assertEquals(filmController.getAllFilms().size(), 1);
 
@@ -33,7 +34,8 @@ class FilmControllerTest {
                 LocalDate.of(1983, 10, 21), 100);
         try {
             filmController.addFilm(film);
-        }catch (ValidationException e){
+        } catch (ValidationException e) {
+            System.out.println("Тест ошибки" + e.getMessage());
         }
 
         assertEquals(filmController.getAllFilms().size(), 1);
@@ -42,7 +44,8 @@ class FilmControllerTest {
                 LocalDate.of(1895, 12, 27), 100);
         try {
             filmController.addFilm(film);
-        }catch (ValidationException e){
+        } catch (ValidationException e) {
+            System.out.println("Тест ошибки" + e.getMessage());
         }
         assertEquals(filmController.getAllFilms().size(), 1);
 
@@ -50,7 +53,8 @@ class FilmControllerTest {
                 LocalDate.of(1983, 10, 21), 0);
         try {
             filmController.addFilm(film);
-        }catch (ValidationException e){
+        } catch (ValidationException e) {
+            System.out.println("Тест ошибки" + e.getMessage());
         }
         assertEquals(filmController.getAllFilms().size(), 1);
 
@@ -62,7 +66,8 @@ class FilmControllerTest {
                 LocalDate.of(1983, 10, 21), 100);
         try {
             filmController.addFilm(film);
-        }catch (ValidationException e){
+        } catch (ValidationException e) {
+            System.out.println("Тест ошибки" + e.getMessage());
         }
         assertEquals(filmController.getAllFilms().size(), 2);
 
@@ -70,7 +75,8 @@ class FilmControllerTest {
                 LocalDate.of(1979, 5, 19), 202);
         try {
             filmController.updateFilm(filmForUpdate);
-        }catch (ValidationException e){
+        } catch (ValidationException e) {
+            System.out.println("Тест ошибки" + e.getMessage());
         }
 
         assertTrue(filmController.getAllFilms().contains(filmForUpdate));
@@ -79,7 +85,8 @@ class FilmControllerTest {
                 LocalDate.of(1983, 10, 21), 100);
         try {
             filmController.updateFilm(filmForUpdate);
-        }catch (ValidationException e){
+        } catch (ValidationException e) {
+            System.out.println("Тест ошибки" + e.getMessage());
         }
         assertEquals(filmController.getAllFilms().size(), 2);
         assertTrue(filmController.getAllFilms().contains(filmForUpdate));
@@ -88,7 +95,8 @@ class FilmControllerTest {
                 LocalDate.of(1983, 10, 21), 100);
         try {
             filmController.updateFilm(filmForUpdate);
-        }catch (ValidationException e){
+        } catch (ValidationException e) {
+            System.out.println("Тест ошибки" + e.getMessage());
         }
         assertEquals(filmController.getAllFilms().size(), 2);
         assertTrue(filmController.getAllFilms().contains(filmForUpdate));
@@ -97,7 +105,8 @@ class FilmControllerTest {
                 LocalDate.of(1895, 12, 27), 100);
         try {
             filmController.updateFilm(filmForUpdate);
-        }catch (ValidationException e){
+        } catch (ValidationException e) {
+            System.out.println("Тест ошибки" + e.getMessage());
         }
         assertEquals(filmController.getAllFilms().size(), 2);
         assertTrue(filmController.getAllFilms().contains(filmForUpdate));
@@ -106,7 +115,8 @@ class FilmControllerTest {
                 LocalDate.of(1983, 10, 21), 0);
         try {
             filmController.updateFilm(filmForUpdate);
-        }catch (ValidationException e){
+        } catch (ValidationException e) {
+            System.out.println("Тест ошибки" + e.getMessage());
         }
         assertEquals(filmController.getAllFilms().size(), 2);
         assertTrue(filmController.getAllFilms().contains(filmForUpdate));

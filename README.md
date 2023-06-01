@@ -4,7 +4,7 @@ Filmorate project.
 
 Database schema Filmorate.
 
-![img.png](src/main/resources/img/database_schema.png)
+![img.png](src/main/resources/img/DatabaseSchema.png)
 
 Примеры запросов к БД:
 

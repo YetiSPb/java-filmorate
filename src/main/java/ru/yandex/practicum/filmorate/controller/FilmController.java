@@ -2,11 +2,10 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.controller.exception.*;
+import ru.yandex.practicum.filmorate.controller.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.controller.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
@@ -27,7 +26,6 @@ public class FilmController {
         generalValidateFilm(film);
         filmService.addFilm(film);
         log.warn("Фильм добавлен: " + film);
-        new ResponseEntity<>(film, HttpStatus.OK);
         return film;
     }
 
@@ -36,7 +34,6 @@ public class FilmController {
         generalValidateFilm(film);
         filmService.updateFilm(film);
         log.warn("Фильм изменён: " + film);
-        new ResponseEntity<>(film, HttpStatus.OK);
         return film;
     }
 
@@ -48,14 +45,12 @@ public class FilmController {
     @GetMapping(value = "/{id}")
     public Film getFilm(@PathVariable int id) {
         Film film = filmService.getFilmById(id);
-        new ResponseEntity<>(film, HttpStatus.OK);
         return film;
     }
 
     @PutMapping(value = "/{id}/like/{userId}")
     public void addLike(@PathVariable int id, @PathVariable int userId) {
         filmService.addLike(id, userId);
-        new ResponseEntity<>(HttpStatus.OK);
     }
 
     @DeleteMapping(value = "/{id}/like/{userId}")
@@ -64,13 +59,11 @@ public class FilmController {
             throw new NotFoundException("Ошибка userId < 1 :" + userId);
         }
         filmService.deleteLike(id, userId);
-        new ResponseEntity<>(HttpStatus.OK);
     }
 
     @GetMapping(value = "/popular")
     public List<Film> getPopularFilms(@RequestParam(required = false, defaultValue = "10") Integer count) {
         List<Film> filmList = new ArrayList<>(filmService.getPopularFilms(count));
-        new ResponseEntity<>(filmList, HttpStatus.OK);
         return filmList;
     }
 

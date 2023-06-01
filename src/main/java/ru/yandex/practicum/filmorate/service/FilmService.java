@@ -10,7 +10,7 @@ import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import java.util.Collections;
 import java.util.List;
 
-import static java.util.Comparator.*;
+import static java.util.Comparator.comparingInt;
 
 @Service
 public class FilmService {

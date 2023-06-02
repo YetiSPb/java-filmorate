@@ -9,18 +9,18 @@ Database schema Filmorate.
 Примеры запросов к БД:
 
 Получить всех пользователей:
-SELECT * FROM User
+SELECT * FROM Users
 
 Получить пользователя по идентефикатоу
-SELECT * FROM User
+SELECT * FROM Users
 where user_id = N
 
 Получить фильм по идентификатору:
-SELECT * FROM Film where film_id = N
+SELECT * FROM Films where film_id = N
 
 Получить первые N самых популярных фильмов
-select *, COUNT(user_id) FROM Film
-RIGHT JOIN Likes on (film_id = film_id)
+SELECT *, COUNT(user_id) FROM Films
+RIGHT JOIN Likes on (Likes.film_id = Films.film_id)
 GROUP BY film_id
-order by COUNT(user_id) desc
-limit N 
+ORDER BY COUNT(user_id) desc
+LIMIT N 

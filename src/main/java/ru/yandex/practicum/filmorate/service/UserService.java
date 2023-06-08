@@ -1,65 +1,95 @@
 package ru.yandex.practicum.filmorate.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.controller.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.controller.exception.ValidationException;
+import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.log.Logger;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
+import ru.yandex.practicum.filmorate.storage.dal.FriendsStorage;
+import ru.yandex.practicum.filmorate.storage.dal.UserStorage;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
-    @Autowired
-    UserStorage userStorage;
+    private final UserStorage userStorage;
+    private final FriendsStorage friendsStorage;
 
-    public User addUser(User user) throws ValidationException {
-        return userStorage.addUser(user);
+    public Collection<User> getUsers() {
+        Collection<User> usersInStorage = userStorage.getUsers();
+        Logger.logSave(HttpMethod.GET, "/users", usersInStorage.toString());
+        return usersInStorage;
     }
 
-    public User updateUser(User user) throws ValidationException {
-        return userStorage.updateUser(user);
+    public User addUser(User user) {
+        User userInStorage = userStorage.addUser(checkValidation(user));
+        Logger.logSave(HttpMethod.POST, "/users", userInStorage.toString());
+        return userInStorage;
     }
 
-    public List<User> getAllUsers() {
-        return userStorage.getAllUsers();
+    public User updateUser(User user) {
+        User userInStorage = userStorage.updateUser(checkValidation(user));
+        Logger.logSave(HttpMethod.PUT, "/users", userInStorage.toString());
+        return userInStorage;
     }
 
-    public User getUserById(int id) {
-        return userStorage.getUserById(id);
+    public User getUserById(long id) {
+        User userInStorage = userStorage.getUserById(id);
+        Logger.logSave(HttpMethod.GET, "/users/" + id, userInStorage.toString());
+        return userInStorage;
     }
 
-    public void addFriend(int idUser, int idFriend) throws NotFoundException {
-        userStorage.getUserById(idUser).addFriend(userStorage.getUserById(idFriend).getId());
+    public void addAsFriend(long id, long friendId) {
+        boolean addition;
+        userStorage.getUserById(id);
+        userStorage.getUserById(friendId);
+        addition = friendsStorage.addAsFriend(id, friendId);
+        Logger.logSave(HttpMethod.PUT, "/users/" + id + "/friends/" + friendId, ((Boolean) addition).toString());
     }
 
-    public void deleteFriend(int idUser, int idFriend) throws NotFoundException {
-        userStorage.getUserById(idUser).deleteFriend(idFriend);
-    }
-
-    public List<User> getAllUserFriends(int idUser) throws NotFoundException {
-        List<User> friendsList = new ArrayList<>();
-        for (int idFriend : userStorage.getUserById(idUser).getFriends()) {
-            friendsList.add(userStorage.getUserById(idFriend));
+    public void removeFromFriends(long id, long friendId) {
+        boolean removal;
+        userStorage.getUserById(id);
+        userStorage.getUserById(friendId);
+        removal = friendsStorage.removeFromFriends(id, friendId);
+        if (!removal) {
+            throw new ObjectNotFoundException(String.format("User with id %s is not friends with user with id %s",
+                    id, friendId));
         }
-        return friendsList;
+        Logger.logSave(HttpMethod.DELETE, "/users/" + id + "/friends/" + friendId, ((Boolean) removal).toString());
     }
 
-    public List<User> getCommonFriends(int idUser, int idFriends) throws NotFoundException {
-        List<User> userFriends = getAllUserFriends(idUser);
-        List<User> friendFriends = getAllUserFriends(idFriends);
+    public List<User> getListOfFriends(long id) {
+        userStorage.getUserById(id);
+        List<User> friendList = friendsStorage.getListOfFriends(id).stream()
+                .map(userStorage::getUserById)
+                .collect(Collectors.toList());
+        Logger.logSave(HttpMethod.GET, "/users/" + id + "/friends", friendList.toString());
+        return friendList;
+    }
 
-        List<User> commonFriends = new ArrayList<>();
+    public List<User> getAListOfMutualFriends(long id, long otherId) {
+        userStorage.getUserById(id);
+        userStorage.getUserById(otherId);
+        List<User> mutualFriends = friendsStorage.getAListOfMutualFriends(id, otherId).stream()
+                .map(userStorage::getUserById)
+                .collect(Collectors.toList());
+        Logger.logSave(HttpMethod.GET, "/users/" + id + "/friends/common/" + otherId, mutualFriends.toString());
+        return mutualFriends;
+    }
 
-        for (User user : userFriends) {
-            if (friendFriends.contains(user)) {
-                commonFriends.add(user);
-            }
+    private User checkValidation(User user) {
+        if (user.getLogin().contains(" ")) {
+            throw new ValidationException("Login must not contain spaces");
         }
-
-        return commonFriends;
+        if (user.getName() == null || user.getName().isBlank()) {
+            user.setName(user.getLogin());
+        }
+        return user;
     }
-
 }

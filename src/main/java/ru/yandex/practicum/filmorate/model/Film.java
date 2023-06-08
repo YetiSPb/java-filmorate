@@ -1,45 +1,27 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
 
+import javax.validation.constraints.*;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 @Data
-@AllArgsConstructor
-@RequiredArgsConstructor
+@Builder
 public class Film {
-    private int id = 0;
-    private String name;
+    @NotBlank(message = "Movie title must not be empty")
+    private final String name;
+    private final List<Long> likes;
+    private final List<Genre> genres;
+    @PositiveOrZero(message = "id must not be negative")
+    private long id;
+    @Size(max = 200, message = "Maximum description length - 200 characters")
     private String description;
     private LocalDate releaseDate;
+    @Positive(message = "Movie duration must be positive")
     private int duration;
-    private Set<Integer> usersLikes = new HashSet<>();
-
-    public Film(String name, String description, LocalDate releaseDate, int duration) {
-        this.name = name;
-        this.description = description;
-        this.releaseDate = releaseDate;
-        this.duration = duration;
-    }
-
-    public Film(int id, String name, String description, LocalDate releaseDate, int duration) {
-        this.id = id;
-        this.name = name;
-        this.description = description;
-        this.releaseDate = releaseDate;
-        this.duration = duration;
-    }
-
-    public void addLike(int idUser) {
-        usersLikes.add(idUser);
-    }
-
-    public void deleteLike(int idUser) {
-        usersLikes.remove(idUser);
-    }
-
+    private int rate;
+    @NotNull(message = "Mpa must not be null")
+    private Mpa mpa;
 }

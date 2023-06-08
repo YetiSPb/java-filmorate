@@ -11,7 +11,7 @@ Database schema Filmorate.
 Получить всех пользователей:
 SELECT * FROM Users
 
-Получить пользователя по идентефикатоу
+Получить пользователя по идентификатору
 SELECT * FROM Users
 where user_id = N
 

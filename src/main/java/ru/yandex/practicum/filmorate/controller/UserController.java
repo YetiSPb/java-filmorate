@@ -1,90 +1,70 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.StringUtils;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpMethod;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.controller.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.controller.exception.ValidationException;
+import ru.yandex.practicum.filmorate.log.Logger;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
+import javax.validation.Valid;
+import java.util.Collection;
 import java.util.List;
 
-@Slf4j
 @RestController
 @RequestMapping("/users")
+@RequiredArgsConstructor
 public class UserController {
-    @Autowired
-    UserService userService;
-
-    @PostMapping()
-    public User addUser(@RequestBody User user) throws ValidationException {
-        generalValidateUser(user);
-        userService.addUser(user);
-        log.warn("Пользователь добавлен: " + user);
-        return user;
-    }
-
-    @PutMapping()
-    public User updateUser(@RequestBody User user) throws ValidationException {
-        generalValidateUser(user);
-        userService.updateUser(user);
-        log.info("Обновлен пользователь: " + user);
-        return user;
-    }
+    private final UserService userService;
 
     @GetMapping
-    public List<User> getAllUsers() {
-        return new ArrayList<>(userService.getAllUsers());
+    public Collection<User> getUsers() {
+        Logger.logRequest(HttpMethod.GET, "/users", "no body");
+        return userService.getUsers();
     }
 
-    @GetMapping(value = "/{id}")
-    public User getUserById(@PathVariable int id) throws NotFoundException {
+    @PostMapping
+    public User addUser(@Valid @RequestBody User user) {
+        Logger.logRequest(HttpMethod.POST, "/users", user.toString());
+        return userService.addUser(user);
+    }
+
+    @PutMapping
+    public User updateUser(@Valid @RequestBody User user) {
+        Logger.logRequest(HttpMethod.PUT, "/users", user.toString());
+        return userService.updateUser(user);
+    }
+
+    @GetMapping("/{id}")
+    public User getUserById(@PathVariable long id) {
+        Logger.logRequest(HttpMethod.GET, "/users/" + id, "no body");
         return userService.getUserById(id);
     }
 
-    @PutMapping(value = "/{id}/friends/{friendId}")
-    public void addFriend(@PathVariable int id, @PathVariable int friendId) throws ValidationException, NotFoundException {
-        userService.addFriend(id, friendId);
-        userService.addFriend(friendId, id);
+    @PutMapping("/{id}/friends/{friendId}")
+    public void addAsFriend(@PathVariable long id,
+                            @PathVariable long friendId) {
+        Logger.logRequest(HttpMethod.PUT, "/users/" + id + "/friends/" + friendId, "no body");
+        userService.addAsFriend(id, friendId);
     }
 
-    @DeleteMapping(value = "/{id}/friends/{friendId}")
-    public void deleteFriend(@PathVariable int id, @PathVariable int friendId) {
-        userService.deleteFriend(id, friendId);
+    @DeleteMapping("/{id}/friends/{friendId}")
+    public void removeFromFriends(@PathVariable long id,
+                                  @PathVariable long friendId) {
+        Logger.logRequest(HttpMethod.DELETE, "/users/" + id + "/friends/" + friendId, "no body");
+        userService.removeFromFriends(id, friendId);
     }
 
-    @GetMapping(value = "/{id}/friends")
-    public List<User> getAllFriends(@PathVariable int id) {
-        return userService.getAllUserFriends(id);
+    @GetMapping("/{id}/friends")
+    public List<User> getListOfFriends(@PathVariable long id) {
+        Logger.logRequest(HttpMethod.GET, "/users/" + id + "/friends", "no body");
+        return userService.getListOfFriends(id);
     }
 
-    @GetMapping(value = "/{id}/friends/common/{otherId}")
-    public List<User> getCommonFriends(@PathVariable int id, @PathVariable int otherId) {
-        return userService.getCommonFriends(id, otherId);
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public List<User> getAListOfMutualFriends(@PathVariable long id,
+                                              @PathVariable long otherId) {
+        Logger.logRequest(HttpMethod.GET, "/users/" + id + "/friends/common/" + otherId, "no body");
+        return userService.getAListOfMutualFriends(id, otherId);
     }
-
-    private void generalValidateUser(@NotNull User user) throws ValidationException {
-
-        if (StringUtils.isEmpty(user.getEmail())) {
-            throw new ValidationException("Электронная почта не может быть пустой и должна содержать символ @");
-        }
-
-        if (StringUtils.isEmpty(user.getLogin()) || user.getLogin().indexOf(" ") > 0)
-            throw new ValidationException("Логин не может быть пустым и содержать пробелы!");
-
-        if (StringUtils.isEmpty(user.getName())) {
-            user.setName(user.getLogin());
-        }
-
-        if (user.getBirthday() == null || user.getBirthday().isAfter(LocalDate.now())) {
-            throw new ValidationException("Дата рождения не может быть в будущем.!");
-        }
-
-    }
-
 }

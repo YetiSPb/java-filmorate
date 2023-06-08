@@ -1,61 +1,91 @@
 package ru.yandex.practicum.filmorate.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.controller.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.controller.exception.ValidationException;
+import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.log.Logger;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.dal.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.dal.LikesStorage;
 
-import java.util.Collections;
+import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
-
-import static java.util.Comparator.comparingInt;
+import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class FilmService {
-    @Autowired
-    FilmStorage filmStorage;
+    private final FilmStorage filmStorage;
+    private final UserService userService;
+    private final LikesStorage likesStorage;
 
-    public Film addFilm(Film film) throws ValidationException {
-        return filmStorage.addFilm(film);
+    public Collection<Film> getFilms() {
+        Collection<Film> filmsInStorage = filmStorage.getFilms();
+        Logger.logSave(HttpMethod.GET, "/films", filmsInStorage.toString());
+        return filmsInStorage;
     }
 
-    public Film updateFilm(Film film) throws ValidationException {
-        return filmStorage.updateFilm(film);
+    public Film addFilm(Film film) {
+        Film filmInStorage = filmStorage.addFilm(checkValidation(film));
+        Logger.logSave(HttpMethod.POST, "/films", filmInStorage.toString());
+        return filmInStorage;
     }
 
-    public List<Film> getAllFilms() {
-        return filmStorage.getAllFilms();
+    public Film updateFilm(Film film) {
+        Film filmInStorage = filmStorage.updateFilm(checkValidation(film));
+        Logger.logSave(HttpMethod.PUT, "/films", filmInStorage.toString());
+        return filmInStorage;
     }
 
-    public Film getFilmById(int idFilm) throws NotFoundException {
-        return filmStorage.getFilmById(idFilm);
+    public Film getFilmById(long id) {
+        Film filmInStorage = filmStorage.getFilmById(id);
+        Logger.logSave(HttpMethod.GET, "/films/" + id, filmInStorage.toString());
+        return filmInStorage;
     }
 
-    public void addLike(int id, int userId) {
-        filmStorage.getFilmById(id).addLike(userId);
+    public void addLike(long id, long userId) {
+        boolean addition;
+        filmStorage.getFilmById(id);
+        userService.getUserById(userId);
+        addition = likesStorage.addLike(id, userId);
+        Logger.logSave(HttpMethod.PUT, "/films/" + id + "/like/" + userId, ((Boolean) addition).toString());
     }
 
-    public void deleteLike(int id, int userId) throws NotFoundException {
-        filmStorage.getFilmById(id).deleteLike(userId);
-    }
-
-    public List<Film> getPopularFilms(int count) {
-        List<Film> popularFilms = filmStorage.getAllFilms();
-
-        popularFilms.sort(comparingInt(o -> o.getUsersLikes().size()));
-
-        Collections.reverse(popularFilms);
-
-        if (count > popularFilms.size()) {
-            count = popularFilms.size();
+    public void unlike(long id, long userId) {
+        boolean removal;
+        filmStorage.getFilmById(id);
+        userService.getUserById(userId);
+        removal = likesStorage.unlike(id, userId);
+        if (!removal) {
+            throw new ObjectNotFoundException(String.format("User with id %s did not like the movie with id %s",
+                    userId, id));
         }
-
-        popularFilms = popularFilms.subList(0, count);
-
-        return popularFilms;
+        Logger.logSave(HttpMethod.DELETE, "/films/" + id + "/like/" + userId, ((Boolean) removal).toString());
     }
 
+    public List<Long> getListOfLikes(long id) {
+        filmStorage.getFilmById(id);
+        List<Long> likeList = likesStorage.getListOfLikes(id);
+        Logger.logSave(HttpMethod.GET, "/films/" + id + "/likes", likeList.toString());
+        return likeList;
+    }
 
+    public List<Film> getTheBestFilms(int count) {
+        List<Film> bestFilms = likesStorage.getTheBestFilms(count).stream()
+                .map(filmStorage::getFilmById)
+                .collect(Collectors.toList());
+        Logger.logSave(HttpMethod.GET, "/films/popular?count=" + count, bestFilms.toString());
+        return bestFilms;
+    }
+
+    private Film checkValidation(Film film) {
+        if (film.getReleaseDate() != null && film.getReleaseDate()
+                .isBefore(LocalDate.of(1895, 12, 28))) {
+            throw new ValidationException("Release date must not be earlier than 12-28-1895");
+        }
+        return film;
+    }
 }

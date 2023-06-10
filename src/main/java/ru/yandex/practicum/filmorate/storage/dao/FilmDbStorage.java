@@ -64,13 +64,12 @@ public class FilmDbStorage implements FilmStorage {
 
         Film oldFilm = getFilmById(film.getId());
 
-
         Collection<Genre> existingGenres = oldFilm.getGenres();
         if (!existingGenres.isEmpty()) {
             filmGenreLineStorage.deleteGenres(film.getId());
         }
 
-        if (!film.getGenres().isEmpty()) {
+        if (film.getGenres() != null && !film.getGenres().isEmpty()) {
             filmGenreLineStorage.addGenres(film.getGenres(), film.getId());
         }
         return getFilmById(film.getId());

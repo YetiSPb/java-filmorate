@@ -5,7 +5,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.log.Logger;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.storage.dal.FilmGenreLineStorage;
 import ru.yandex.practicum.filmorate.storage.dal.GenreStorage;
 
 import java.util.Collection;

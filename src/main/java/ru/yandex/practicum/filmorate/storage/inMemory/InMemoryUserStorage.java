@@ -14,8 +14,8 @@ import java.util.Map;
 @Component
 @Slf4j
 public class InMemoryUserStorage implements UserStorage {
-    private final Map<Long, User> users = new HashMap<>();
-    private long id = 0;
+    private final Map<Integer, User> users = new HashMap<>();
+    private int id = 0;
 
     @Override
     public Collection<User> getUsers() {
@@ -43,16 +43,21 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public User getUserById(long id) {
+    public User getUserById(int id) {
         userExistenceCheck(id);
         return users.get(id);
+    }
+
+    @Override
+    public void checkUserExists(int userId) {
+        getUserById(userId);
     }
 
     private void generateId() {
         id++;
     }
 
-    private void userExistenceCheck(long id) {
+    private void userExistenceCheck(int id) {
         if (!users.containsKey(id)) {
             throw new ObjectNotFoundException(String.format("User with id %s not found", id));
         }

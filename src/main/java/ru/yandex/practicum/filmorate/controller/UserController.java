@@ -36,34 +36,34 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public User getUserById(@PathVariable long id) {
+    public User getUserById(@PathVariable int id) {
         Logger.logRequest(HttpMethod.GET, "/users/" + id, "no body");
         return userService.getUserById(id);
     }
 
     @PutMapping("/{id}/friends/{friendId}")
-    public void addAsFriend(@PathVariable long id,
-                            @PathVariable long friendId) {
+    public void addAsFriend(@PathVariable int id,
+                            @PathVariable int friendId) {
         Logger.logRequest(HttpMethod.PUT, "/users/" + id + "/friends/" + friendId, "no body");
         userService.addAsFriend(id, friendId);
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
-    public void removeFromFriends(@PathVariable long id,
-                                  @PathVariable long friendId) {
+    public void removeFromFriends(@PathVariable int id,
+                                  @PathVariable int friendId) {
         Logger.logRequest(HttpMethod.DELETE, "/users/" + id + "/friends/" + friendId, "no body");
         userService.removeFromFriends(id, friendId);
     }
 
     @GetMapping("/{id}/friends")
-    public List<User> getListOfFriends(@PathVariable long id) {
+    public List<User> getListOfFriends(@PathVariable int id) {
         Logger.logRequest(HttpMethod.GET, "/users/" + id + "/friends", "no body");
         return userService.getListOfFriends(id);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
-    public List<User> getAListOfMutualFriends(@PathVariable long id,
-                                              @PathVariable long otherId) {
+    public List<User> getAListOfMutualFriends(@PathVariable int id,
+                                              @PathVariable int otherId) {
         Logger.logRequest(HttpMethod.GET, "/users/" + id + "/friends/common/" + otherId, "no body");
         return userService.getAListOfMutualFriends(id, otherId);
     }

@@ -3,12 +3,12 @@ package ru.yandex.practicum.filmorate.storage.dal;
 import java.util.List;
 
 public interface LikesStorage {
-    boolean addLike(long filmId, long userId);
+    boolean addLike(int filmId, int userId);
 
-    boolean unlike(long filmId, long userId);
+    boolean unlike(int filmId, int userId);
 
-    List<Long> getListOfLikes(long filmId);
+    List<Integer> getListOfLikes(int filmId);
 
-    List<Long> getTheBestFilms(int count);
+    List<Integer> getTheBestFilms(int count);
 
 }

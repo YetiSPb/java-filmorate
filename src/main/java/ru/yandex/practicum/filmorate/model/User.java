@@ -17,9 +17,9 @@ public class User {
     private final String email;
     @NotBlank(message = "Login must not be empty")
     private final String login;
-    private final List<Long> friends;
+    private final List<Integer> friends;
     @PositiveOrZero(message = "id must not be negative")
-    private long id;
+    private int id;
     private String name;
     @PastOrPresent(message = "Date of birth must not be in the future")
     private LocalDate birthday;

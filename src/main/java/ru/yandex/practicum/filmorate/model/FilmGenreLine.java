@@ -6,6 +6,6 @@ import lombok.Data;
 @Data
 @Builder
 public class FilmGenreLine {
-    private long filmId;
-    private long genreId;
+    private int filmId;
+    private int genreId;
 }

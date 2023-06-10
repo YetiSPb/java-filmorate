@@ -3,12 +3,12 @@ package ru.yandex.practicum.filmorate.storage.dal;
 import java.util.List;
 
 public interface FriendsStorage {
-    boolean addAsFriend(long userId, long friendId);
+    boolean addAsFriend(int userId, int friendId);
 
-    boolean removeFromFriends(long userId, long friendId);
+    boolean removeFromFriends(int userId, int friendId);
 
-    List<Long> getListOfFriends(long userId);
+    List<Integer> getListOfFriends(int userId);
 
-    List<Long> getAListOfMutualFriends(long userId, long otherId);
+    List<Integer> getAListOfMutualFriends(int userId, int otherId);
 
 }

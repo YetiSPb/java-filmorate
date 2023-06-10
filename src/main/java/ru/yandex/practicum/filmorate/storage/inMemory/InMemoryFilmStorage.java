@@ -14,8 +14,8 @@ import java.util.Map;
 @Component
 @Slf4j
 public class InMemoryFilmStorage implements FilmStorage {
-    private final Map<Long, Film> films = new HashMap<>();
-    private long id = 0;
+    private final Map<Integer, Film> films = new HashMap<>();
+    private int id = 0;
 
     @Override
     public Collection<Film> getFilms() {
@@ -43,16 +43,21 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Film getFilmById(long id) {
+    public Film getFilmById(int id) {
         filmExistenceCheck(id);
         return films.get(id);
+    }
+
+    @Override
+    public void checkFilmExists(int filmId) {
+        getFilmById(filmId);
     }
 
     private void generateId() {
         id++;
     }
 
-    private void filmExistenceCheck(long id) {
+    private void filmExistenceCheck(int id) {
         if (!films.containsKey(id)) {
             throw new ObjectNotFoundException(String.format("Film with id %s not found", id));
         }

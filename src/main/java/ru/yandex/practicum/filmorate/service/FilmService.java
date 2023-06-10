@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.log.Logger;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.dal.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.dal.LikesStorage;
+import ru.yandex.practicum.filmorate.storage.dal.UserStorage;
 
 import java.time.LocalDate;
 import java.util.Collection;
@@ -19,7 +20,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class FilmService {
     private final FilmStorage filmStorage;
-    private final UserService userService;
+    private final UserStorage userStorage;
     private final LikesStorage likesStorage;
 
     public Collection<Film> getFilms() {
@@ -29,35 +30,37 @@ public class FilmService {
     }
 
     public Film addFilm(Film film) {
-        Film filmInStorage = filmStorage.addFilm(checkValidation(film));
+        checkValidation(film);
+        Film filmInStorage = filmStorage.addFilm(film);
         Logger.logSave(HttpMethod.POST, "/films", filmInStorage.toString());
         return filmInStorage;
     }
 
     public Film updateFilm(Film film) {
-        Film filmInStorage = filmStorage.updateFilm(checkValidation(film));
+        checkValidation(film);
+        Film filmInStorage = filmStorage.updateFilm(film);
         Logger.logSave(HttpMethod.PUT, "/films", filmInStorage.toString());
         return filmInStorage;
     }
 
-    public Film getFilmById(long id) {
+    public Film getFilmById(int id) {
         Film filmInStorage = filmStorage.getFilmById(id);
         Logger.logSave(HttpMethod.GET, "/films/" + id, filmInStorage.toString());
         return filmInStorage;
     }
 
-    public void addLike(long id, long userId) {
+    public void addLike(int id, int userId) {
         boolean addition;
-        filmStorage.getFilmById(id);
-        userService.getUserById(userId);
+        filmStorage.checkFilmExists(id);
+        userStorage.checkUserExists(userId);
         addition = likesStorage.addLike(id, userId);
         Logger.logSave(HttpMethod.PUT, "/films/" + id + "/like/" + userId, ((Boolean) addition).toString());
     }
 
-    public void unlike(long id, long userId) {
+    public void unlike(int id, int userId) {
         boolean removal;
-        filmStorage.getFilmById(id);
-        userService.getUserById(userId);
+        filmStorage.checkFilmExists(id);
+        userStorage.checkUserExists(userId);
         removal = likesStorage.unlike(id, userId);
         if (!removal) {
             throw new ObjectNotFoundException(String.format("User with id %s did not like the movie with id %s",
@@ -66,9 +69,9 @@ public class FilmService {
         Logger.logSave(HttpMethod.DELETE, "/films/" + id + "/like/" + userId, ((Boolean) removal).toString());
     }
 
-    public List<Long> getListOfLikes(long id) {
-        filmStorage.getFilmById(id);
-        List<Long> likeList = likesStorage.getListOfLikes(id);
+    public List<Integer> getListOfLikes(int id) {
+        filmStorage.checkFilmExists(id);
+        List<Integer> likeList = likesStorage.getListOfLikes(id);
         Logger.logSave(HttpMethod.GET, "/films/" + id + "/likes", likeList.toString());
         return likeList;
     }
@@ -81,11 +84,10 @@ public class FilmService {
         return bestFilms;
     }
 
-    private Film checkValidation(Film film) {
+    private void checkValidation(Film film) {
         if (film.getReleaseDate() != null && film.getReleaseDate()
                 .isBefore(LocalDate.of(1895, 12, 28))) {
             throw new ValidationException("Release date must not be earlier than 12-28-1895");
         }
-        return film;
     }
 }

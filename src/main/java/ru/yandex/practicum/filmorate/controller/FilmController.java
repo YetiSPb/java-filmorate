@@ -38,27 +38,27 @@ public class FilmController {
     }
 
     @GetMapping("/{id}")
-    public Film getFilmById(@PathVariable long id) {
+    public Film getFilmById(@PathVariable int id) {
         Logger.logRequest(HttpMethod.GET, "/films/" + id, "no body");
         return filmService.getFilmById(id);
     }
 
     @PutMapping("/{id}/like/{userId}")
-    public void addLike(@PathVariable long id,
-                        @PathVariable long userId) {
+    public void addLike(@PathVariable int id,
+                        @PathVariable int userId) {
         Logger.logRequest(HttpMethod.PUT, "/films/" + id + "/like/" + userId, "no body");
         filmService.addLike(id, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public void unlike(@PathVariable long id,
-                       @PathVariable long userId) {
+    public void unlike(@PathVariable int id,
+                       @PathVariable int userId) {
         Logger.logRequest(HttpMethod.DELETE, "/films/" + id + "/like/" + userId, "no body");
         filmService.unlike(id, userId);
     }
 
     @GetMapping("/{id}/likes")
-    public List<Long> getListOfLikes(@PathVariable long id) {
+    public List<Integer> getListOfLikes(@PathVariable int id) {
         Logger.logRequest(HttpMethod.GET, "/films/" + id + "/likes", "no body");
         return filmService.getListOfLikes(id);
     }

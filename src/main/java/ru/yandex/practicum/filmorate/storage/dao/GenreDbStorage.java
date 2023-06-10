@@ -7,17 +7,22 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.storage.dal.FilmGenreLineStorage;
 import ru.yandex.practicum.filmorate.storage.dal.GenreStorage;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class GenreDbStorage implements GenreStorage {
     private final JdbcTemplate jdbcTemplate;
+    private final FilmGenreLineStorage filmGenreLineStorage;
+    //private final GenreStorage genreStorage;
 
     @Override
     public Collection<Genre> getGenres() {
@@ -43,4 +48,12 @@ public class GenreDbStorage implements GenreStorage {
                 .name(resultSet.getString("name"))
                 .build();
     }
+
+    public List<Genre> getListOfGenres(long id) {
+
+        return filmGenreLineStorage.getListOfGenres(id).stream()
+                .map(this::getGenreById)
+                .collect(Collectors.toList());
+    }
+
 }

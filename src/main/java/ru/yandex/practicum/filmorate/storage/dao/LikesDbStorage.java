@@ -19,7 +19,7 @@ public class LikesDbStorage implements LikesStorage {
     private final JdbcTemplate jdbcTemplate;
 
     @Override
-    public boolean addLike(long filmId, long userId) {
+    public boolean addLike(int filmId, int userId) {
         Likes likes = Likes.builder()
                 .filmId(filmId)
                 .userId(userId)
@@ -30,27 +30,26 @@ public class LikesDbStorage implements LikesStorage {
     }
 
     @Override
-    public boolean unlike(long filmId, long userId) {
+    public boolean unlike(int filmId, int userId) {
         String sqlQuery = "delete from LIKES where FILM_ID = ? and USER_ID = ?";
         return jdbcTemplate.update(sqlQuery, filmId, userId) > 0;
     }
 
     @Override
-    public List<Long> getListOfLikes(long filmId) {
+    public List<Integer> getListOfLikes(int filmId) {
         String sqlQuery = "select USER_ID from LIKES where FILM_ID = ?";
-        return jdbcTemplate.queryForList(sqlQuery, Long.class, filmId);
+        return jdbcTemplate.queryForList(sqlQuery, Integer.class, filmId);
     }
 
     @Override
-    public List<Long> getTheBestFilms(int count) {
+    public List<Integer> getTheBestFilms(int count) {
         String sqlQuery = "select FILMS.FILM_ID " +
                 "from FILMS " +
                 "left outer join LIKES ON FILMS.FILM_ID = LIKES.FILM_ID " +
                 "group by FILMS.FILM_id " +
                 "order by count(distinct LIKES.USER_ID) desc " +
-                "limit + ?";
-        List<Long> likes = jdbcTemplate.queryForList(sqlQuery, Long.class, count);
-        return likes;
+                "limit ?";
+        return jdbcTemplate.queryForList(sqlQuery, Integer.class, count);
     }
 
     private Map<String, Object> toMap(Likes likes) {

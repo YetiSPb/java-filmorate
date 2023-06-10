@@ -27,35 +27,37 @@ public class UserService {
     }
 
     public User addUser(User user) {
-        User userInStorage = userStorage.addUser(checkValidation(user));
+        checkValidation(user);
+        User userInStorage = userStorage.addUser(user);
         Logger.logSave(HttpMethod.POST, "/users", userInStorage.toString());
         return userInStorage;
     }
 
     public User updateUser(User user) {
-        User userInStorage = userStorage.updateUser(checkValidation(user));
+        checkValidation(user);
+        User userInStorage = userStorage.updateUser(user);
         Logger.logSave(HttpMethod.PUT, "/users", userInStorage.toString());
         return userInStorage;
     }
 
-    public User getUserById(long id) {
+    public User getUserById(int id) {
         User userInStorage = userStorage.getUserById(id);
         Logger.logSave(HttpMethod.GET, "/users/" + id, userInStorage.toString());
         return userInStorage;
     }
 
-    public void addAsFriend(long id, long friendId) {
+    public void addAsFriend(int id, int friendId) {
         boolean addition;
-        userStorage.getUserById(id);
-        userStorage.getUserById(friendId);
+        userStorage.checkUserExists(id);
+        userStorage.checkUserExists(friendId);
         addition = friendsStorage.addAsFriend(id, friendId);
         Logger.logSave(HttpMethod.PUT, "/users/" + id + "/friends/" + friendId, ((Boolean) addition).toString());
     }
 
-    public void removeFromFriends(long id, long friendId) {
+    public void removeFromFriends(int id, int friendId) {
         boolean removal;
-        userStorage.getUserById(id);
-        userStorage.getUserById(friendId);
+        userStorage.checkUserExists(id);
+        userStorage.checkUserExists(friendId);
         removal = friendsStorage.removeFromFriends(id, friendId);
         if (!removal) {
             throw new ObjectNotFoundException(String.format("User with id %s is not friends with user with id %s",
@@ -64,8 +66,8 @@ public class UserService {
         Logger.logSave(HttpMethod.DELETE, "/users/" + id + "/friends/" + friendId, ((Boolean) removal).toString());
     }
 
-    public List<User> getListOfFriends(long id) {
-        userStorage.getUserById(id);
+    public List<User> getListOfFriends(int id) {
+        userStorage.checkUserExists(id);
         List<User> friendList = friendsStorage.getListOfFriends(id).stream()
                 .map(userStorage::getUserById)
                 .collect(Collectors.toList());
@@ -73,9 +75,9 @@ public class UserService {
         return friendList;
     }
 
-    public List<User> getAListOfMutualFriends(long id, long otherId) {
-        userStorage.getUserById(id);
-        userStorage.getUserById(otherId);
+    public List<User> getAListOfMutualFriends(int id, int otherId) {
+        userStorage.checkUserExists(id);
+        userStorage.checkUserExists(otherId);
         List<User> mutualFriends = friendsStorage.getAListOfMutualFriends(id, otherId).stream()
                 .map(userStorage::getUserById)
                 .collect(Collectors.toList());
@@ -83,13 +85,12 @@ public class UserService {
         return mutualFriends;
     }
 
-    private User checkValidation(User user) {
+    private void checkValidation(User user) {
         if (user.getLogin().contains(" ")) {
             throw new ValidationException("Login must not contain spaces");
         }
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
-        return user;
     }
 }

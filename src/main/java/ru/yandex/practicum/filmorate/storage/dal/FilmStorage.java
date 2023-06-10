@@ -11,5 +11,8 @@ public interface FilmStorage {
 
     Film updateFilm(Film film);
 
-    Film getFilmById(long filmId);
+    Film getFilmById(int filmId);
+
+    void checkFilmExists(int filmId);
+
 }

@@ -5,6 +5,7 @@ import lombok.Data;
 
 import javax.validation.constraints.*;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -12,10 +13,11 @@ import java.util.List;
 public class Film {
     @NotBlank(message = "Movie title must not be empty")
     private final String name;
-    private final List<Long> likes;
-    private final List<Genre> genres;
+    private final List<Integer> likes;
+    @Builder.Default
+    private final List<Genre> genres = new ArrayList<>();
     @PositiveOrZero(message = "id must not be negative")
-    private long id;
+    private int id;
     @Size(max = 200, message = "Maximum description length - 200 characters")
     private String description;
     private LocalDate releaseDate;

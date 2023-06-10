@@ -37,7 +37,7 @@ public class UserDbStorage implements UserStorage {
         SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("users")
                 .usingGeneratedKeyColumns("user_id");
-        long userId = simpleJdbcInsert.executeAndReturnKey(toMap(user)).longValue();
+        int userId = simpleJdbcInsert.executeAndReturnKey(toMap(user)).intValue();
         return getUserById(userId);
     }
 
@@ -54,7 +54,7 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public User getUserById(long userId) {
+    public User getUserById(int userId) {
         User user;
         String sqlQuery = "select * from USERS where USER_ID = ?";
         try {
@@ -63,6 +63,11 @@ public class UserDbStorage implements UserStorage {
             throw new ObjectNotFoundException(String.format("User with id %s not found", userId));
         }
         return user;
+    }
+
+    @Override
+    public void checkUserExists(int userId) {
+        getUserById(userId);
     }
 
     private Map<String, Object> toMap(User user) {
@@ -76,12 +81,12 @@ public class UserDbStorage implements UserStorage {
 
     private User mapRowToUser(ResultSet resultSet, int rowNum) throws SQLException {
         return User.builder()
-                .id(resultSet.getLong("user_id"))
+                .id(resultSet.getInt("user_id"))
                 .email(resultSet.getString("email"))
                 .login(resultSet.getString("login"))
                 .name(resultSet.getString("name"))
                 .birthday(resultSet.getDate("birthday").toLocalDate())
-                .friends(friendsStorage.getListOfFriends(resultSet.getLong("user_id")))
+                .friends(friendsStorage.getListOfFriends(resultSet.getInt("user_id")))
                 .build();
     }
 }

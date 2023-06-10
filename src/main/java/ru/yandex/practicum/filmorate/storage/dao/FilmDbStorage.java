@@ -10,11 +10,7 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.service.GenreService;
-import ru.yandex.practicum.filmorate.service.MpaService;
-import ru.yandex.practicum.filmorate.storage.dal.FilmGenreLineStorage;
-import ru.yandex.practicum.filmorate.storage.dal.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.dal.LikesStorage;
+import ru.yandex.practicum.filmorate.storage.dal.*;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -29,8 +25,8 @@ import java.util.Map;
 public class FilmDbStorage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
     private final LikesStorage likesStorage;
-    private final MpaService mpaService;
-    private final GenreService genreService;
+    private final MpaStorage mpaStorage;
+    private final GenreStorage genreStorage;
     private final FilmGenreLineStorage filmGenreLineStorage;
 
     @Override
@@ -44,7 +40,7 @@ public class FilmDbStorage implements FilmStorage {
         SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("films")
                 .usingGeneratedKeyColumns("film_id");
-        long filmId = simpleJdbcInsert.executeAndReturnKey(toMap(film)).longValue();
+        int filmId = simpleJdbcInsert.executeAndReturnKey(toMap(film)).intValue();
 
 
         if (film.getGenres() != null && !film.getGenres().isEmpty()) {
@@ -70,18 +66,18 @@ public class FilmDbStorage implements FilmStorage {
 
 
         Collection<Genre> existingGenres = oldFilm.getGenres();
-        if (existingGenres != null && !existingGenres.isEmpty()) {
+        if (!existingGenres.isEmpty()) {
             filmGenreLineStorage.deleteGenres(film.getId());
         }
 
-        if (film.getGenres() != null && !film.getGenres().isEmpty()) {
+        if (!film.getGenres().isEmpty()) {
             filmGenreLineStorage.addGenres(film.getGenres(), film.getId());
         }
         return getFilmById(film.getId());
     }
 
     @Override
-    public Film getFilmById(long filmId) {
+    public Film getFilmById(int filmId) {
         Film film;
         String sqlQuery = "select * from FILMS where FILM_ID = ?";
         try {
@@ -92,17 +88,22 @@ public class FilmDbStorage implements FilmStorage {
         return film;
     }
 
+    @Override
+    public void checkFilmExists(int filmId) {
+        getFilmById(filmId);
+    }
+
     private Film mapRowToFilm(ResultSet resultSet, int rowNum) throws SQLException {
         return Film.builder()
-                .id(resultSet.getLong("film_id"))
+                .id(resultSet.getInt("film_id"))
                 .name(resultSet.getString("name"))
                 .description(resultSet.getString("description"))
                 .releaseDate(resultSet.getDate("release_date").toLocalDate())
                 .duration(resultSet.getInt("duration"))
                 .rate(resultSet.getInt("rate"))
-                .mpa(mpaService.getMpaById(resultSet.getInt("mpa_id")))
-                .likes(likesStorage.getListOfLikes(resultSet.getLong("film_id")))
-                .genres(genreService.getListOfGenres(resultSet.getLong("film_id")))
+                .mpa(mpaStorage.getMpaById(resultSet.getInt("mpa_id")))
+                .likes(likesStorage.getListOfLikes(resultSet.getInt("film_id")))
+                .genres(genreStorage.getListOfGenres(resultSet.getLong("film_id")))
                 .build();
     }
 

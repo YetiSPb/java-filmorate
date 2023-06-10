@@ -19,7 +19,7 @@ public class FriendsDbStorage implements FriendsStorage {
     private final JdbcTemplate jdbcTemplate;
 
     @Override
-    public boolean addAsFriend(long userId, long friendId) {
+    public boolean addAsFriend(int userId, int friendId) {
         Friends friends = Friends.builder()
                 .userId(userId)
                 .friendId(friendId)
@@ -30,23 +30,23 @@ public class FriendsDbStorage implements FriendsStorage {
     }
 
     @Override
-    public boolean removeFromFriends(long userId, long friendId) {
+    public boolean removeFromFriends(int userId, int friendId) {
         String sqlQuery = "delete from FRIENDS where USER_ID = ? and FRIEND_ID = ?";
         return jdbcTemplate.update(sqlQuery, userId, friendId) > 0;
     }
 
     @Override
-    public List<Long> getListOfFriends(long userId) {
+    public List<Integer> getListOfFriends(int userId) {
         String sqlQuery = "select FRIEND_ID from FRIENDS where USER_ID = ?";
-        return jdbcTemplate.queryForList(sqlQuery, Long.class, userId);
+        return jdbcTemplate.queryForList(sqlQuery, Integer.class, userId);
     }
 
     @Override
-    public List<Long> getAListOfMutualFriends(long userId, long otherId) {
+    public List<Integer> getAListOfMutualFriends(int userId, int otherId) {
         String sqlQuery = "select FRIEND_ID " +
                 "from (select *  from FRIENDS where USER_ID = ? or USER_ID = ?) " +
                 "group by FRIEND_ID HAVING (COUNT(*) > 1)";
-        return jdbcTemplate.queryForList(sqlQuery, Long.class, userId, otherId);
+        return jdbcTemplate.queryForList(sqlQuery, Integer.class, userId, otherId);
     }
 
     private Map<String, Object> toMap(Friends friends) {

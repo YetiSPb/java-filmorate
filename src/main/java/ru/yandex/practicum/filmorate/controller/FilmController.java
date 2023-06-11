@@ -13,6 +13,7 @@ import java.util.Collection;
 import java.util.List;
 
 
+@SuppressWarnings("unused")
 @RestController
 @RequestMapping("/films")
 @RequiredArgsConstructor
